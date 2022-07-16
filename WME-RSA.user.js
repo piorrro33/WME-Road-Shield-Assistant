@@ -24,92 +24,92 @@ const RSA_UPDATE_NOTES = `<b>NEW:</b><br>
 <b>FIXES:</b><br>
 - No longer highlights alt street names when it shouldn't<br><br>`;
 
-    var [zm0, zm1, zm2, zm3, zm4, zm5, zm6, zm7, zm8, zm9, zm10] = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+var [zm0, zm1, zm2, zm3, zm4, zm5, zm6, zm7, zm8, zm9, zm10] = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
 
 const RoadAbbr = {
     //Canada    
-	40: {
+    40: {
         "Alberta": {
             'Hwy 1$': 5000, 						            // 5000: National-Trans-Canada Highway
             'Hwy 1A': 5011,  						            // 5011: Alberta - Provincial Hwy
             'Hwy 2': 5011,							            // 5011: Alberta - Provincial Hwy
-            'Hwy 3$' : 5015,						            // 5015: Alberta - Crowsnext Hwy
-            'Hwy 3A' : 5011,						            // 5011: Alberta - Provincial Hwy
-            'Hwy 16$' : 5000,						            // 5000: National-Trans-Canada Highway
-            'Hwy 16A' : 5011,						            // 5011: Alberta - Provincial Hwy
-            'Hwy ([4-9]|1[0-5])\b' : 5011, 					    // 5011: Alberta - Provincial Hwy
-            'Hwy (1[7-9]|[2-9]\d|1\d{2}|20\d|21[0-6])\b' : 5011,// 5011: Alberta - Provincial Hwy
-            'Hwy (21[7-9]|2[2-9]\d|[3-9]\d{2})\b' : 5011		// 5011: Alberta - Provincial Hwy
-		},
-		"British Columbia": {
+            'Hwy 3$': 5015,						            // 5015: Alberta - Crowsnext Hwy
+            'Hwy 3A': 5011,						            // 5011: Alberta - Provincial Hwy
+            'Hwy 16$': 5000,						            // 5000: National-Trans-Canada Highway
+            'Hwy 16A': 5011,						            // 5011: Alberta - Provincial Hwy
+            'Hwy ([4-9]|1[0-5])\b': 5011, 					    // 5011: Alberta - Provincial Hwy
+            'Hwy (1[7-9]|[2-9]\d|1\d{2}|20\d|21[0-6])\b': 5011,// 5011: Alberta - Provincial Hwy
+            'Hwy (21[7-9]|2[2-9]\d|[3-9]\d{2})\b': 5011		// 5011: Alberta - Provincial Hwy
+        },
+        "British Columbia": {
             'Hwy 1': 5000, 							            // 5000: National-Trans-Canada Highway
             'Hwy 2': 5001,  						            // 5001: BC - Provincial Hwy
             'Hwy 3': 5002,  						            // 5002: BC - Crowsnest Hwy
             'Hwy 16': 5000,							            // 5000: National-Trans-Canada Highway
             'Hwy 113': 5004,						            // 5004: BC - Nisga'a Hwy
-            'Hwy ([4-9]|[1-9]\d|10\d|11[0-2])\b' : 5001,		// 5001: BC - Provincial Hwy
-            'Hwy (11[4-9]|1[2-9]\d|[2-9]\d{2})\b' : 5001		// 5001: BC - Provincial Hwy
-		},
-		"Saskatchewan": {
+            'Hwy ([4-9]|[1-9]\d|10\d|11[0-2])\b': 5001,		// 5001: BC - Provincial Hwy
+            'Hwy (11[4-9]|1[2-9]\d|[2-9]\d{2})\b': 5001		// 5001: BC - Provincial Hwy
+        },
+        "Saskatchewan": {
             'Hwy 1': 5000, 							            // 5000: National - Trans-Canada Hwy
-            'Hwy 16' : 5000,						            // 5000: National - Trans-Canada Hwy
-            'Hwy ([2-9]|1[0-5])\b' : 5030,					    // 5030: Saskatchewan - Provincial Hwy
-            'Hwy (1[7-9]|[2-9]\d|[1-3]\d{2})\b' : 5030,			// 5030: Saskatchewan - Provincial Hwy
-            'Hwy (90\d|9[1-9]\d)\b' : 5031,					    // 5031: Saskatchewan - Northern Secondary Hwy
-            'Hwy (60\d|6[1-9]\d|7\d{2})\b' : 5032			    // 5032: Saskatchewan - Municipal Road
-		},
-		"Manitoba": {
+            'Hwy 16': 5000,						            // 5000: National - Trans-Canada Hwy
+            'Hwy ([2-9]|1[0-5])\b': 5030,					    // 5030: Saskatchewan - Provincial Hwy
+            'Hwy (1[7-9]|[2-9]\d|[1-3]\d{2})\b': 5030,			// 5030: Saskatchewan - Provincial Hwy
+            'Hwy (90\d|9[1-9]\d)\b': 5031,					    // 5031: Saskatchewan - Northern Secondary Hwy
+            'Hwy (60\d|6[1-9]\d|7\d{2})\b': 5032			    // 5032: Saskatchewan - Municipal Road
+        },
+        "Manitoba": {
             'Hwy 1': 5000, 							            // 5000: National - Trans-Canada Hwy
             'Hwy 16': 5000,							            // 5000: National - Trans-Canada Hwy
             'Hwy ([2-9]|1[0-5])\b': 5038,					    // 5038: Manitoba - Provincial Trunk Highway
             'Hwy (1[7-9]|[2-9]\d|1\d{2})\b': 5038,				// 5038: Manitoba - Provincial Trunk Highway
             'Hwy (20\d|2[1-9]\d|[3-9]\d{2})\b': 5039			// 5039: Manitoba - Provincial Rd
         },
-		"Ontario": {
+        "Ontario": {
             'QEW': 5058, 							            // 5058: Ontario QEW
-            'Hwy 17' : 5000,						            // 5000: National - Trans-Canada Hwy
-            'Hwy 407 ETR' : 5060,						        // 5060: Ontario ETR
-            'Hwy 412' : 5059,						            // 5059: Ontario Toll Hwy
-            'Hwy 418' : 5059,						            // 5059: Ontario Toll Hwy
-            'Hwy ([1-9]|1[0-6])\b' : 5057,					    // 5057: Ontario King's Hwy 1-16
-            'Hwy (1[89]|[2-9]\d|[1-3]\d{2}|40[0-6])\b' : 5057,	// 5057: Ontario King's Hwy 18-406
-            'Hwy (40[89]|41[01])\b' : 5057,					    // 5057: Ontario King's Hwy 408-411
-            'Hwy (41[3-7])\b' : 5057,					        // 5057: Ontario King's Hwy 413-417
-            'Hwy (419|4[2-9]\d)\b' : 5057,					    // 5057: Ontario King's Hwy 419-499
-            'Hwy (50\d|5[1-9]\d|6\d{2})\b' : 5061,				// 5061: Ontario Secondary Hwy 500-699
-            'Hwy (80\d|8[1-9]\d)\b' : 5057					    // 5057: Ontario Tertiary Hwy
-		},
-		"Quebec": {
-            'Rte Transcanadienne' : 5093,					    // 5093: Quebec: Route Transcanadienne
-            'Aut ([1-9]|[1-9]\d{1,2})\b' : 5090,				// 5090: Quebec Autoroute 1-999
-            'Rte (10\d|1[1-9]\d|[23]\d{2})\b' : 5091,			// 5091: Quebec Route 100-399
-            'R (10\d|1[1-9]\d|[2-9]\d{2}|1[0-4]\d{2}|15[0-5]\d)\b' : 5092	// 5092: Quebec Route 100-1559
-		},
-		"New Brunswick": {
+            'Hwy 17': 5000,						            // 5000: National - Trans-Canada Hwy
+            'Hwy 407 ETR': 5060,						        // 5060: Ontario ETR
+            'Hwy 412': 5059,						            // 5059: Ontario Toll Hwy
+            'Hwy 418': 5059,						            // 5059: Ontario Toll Hwy
+            'Hwy ([1-9]|1[0-6])\b': 5057,					    // 5057: Ontario King's Hwy 1-16
+            'Hwy (1[89]|[2-9]\d|[1-3]\d{2}|40[0-6])\b': 5057,	// 5057: Ontario King's Hwy 18-406
+            'Hwy (40[89]|41[01])\b': 5057,					    // 5057: Ontario King's Hwy 408-411
+            'Hwy (41[3-7])\b': 5057,					        // 5057: Ontario King's Hwy 413-417
+            'Hwy (419|4[2-9]\d)\b': 5057,					    // 5057: Ontario King's Hwy 419-499
+            'Hwy (50\d|5[1-9]\d|6\d{2})\b': 5061,				// 5061: Ontario Secondary Hwy 500-699
+            'Hwy (80\d|8[1-9]\d)\b': 5057					    // 5057: Ontario Tertiary Hwy
+        },
+        "Quebec": {
+            'Rte Transcanadienne': 5093,					    // 5093: Quebec: Route Transcanadienne
+            'Aut ([1-9]|[1-9]\d{1,2})\b': 5090,				// 5090: Quebec Autoroute 1-999
+            'Rte (10\d|1[1-9]\d|[23]\d{2})\b': 5091,			// 5091: Quebec Route 100-399
+            'R (10\d|1[1-9]\d|[2-9]\d{2}|1[0-4]\d{2}|15[0-5]\d)\b': 5092	// 5092: Quebec Route 100-1559
+        },
+        "New Brunswick": {
             'Rte 2': 5000, 							            // 5000: Trans-Canada Hwy
             'Rte 16': 5000,							            // 5000: Trans-Canada Hwy
             'Rte 1': 5112,							            // 5112: NB Arterial Highway 1
-            'Rte ([3-9]|1[0-5])\b' : 5112,					    // 5112: NB Arterial Highway 3-15
-            'Rte (1[7-9]|[2-9]\d)\b' : 5112,				    // 5112: NB Arterial Highway 17-99
-            'Rte (10\d|1[1-9]\d)\b' : 511,					    // 5113: NB Collector Highway 100-199
-            'Rte (20\d|2[1-9]\d|[3-9]\d{2})\b' : 5114			// 5114: NB Local Highway 200-999
-		},
-		"Nova Scotia": {
+            'Rte ([3-9]|1[0-5])\b': 5112,					    // 5112: NB Arterial Highway 3-15
+            'Rte (1[7-9]|[2-9]\d)\b': 5112,				    // 5112: NB Arterial Highway 17-99
+            'Rte (10\d|1[1-9]\d)\b': 511,					    // 5113: NB Collector Highway 100-199
+            'Rte (20\d|2[1-9]\d|[3-9]\d{2})\b': 5114			// 5114: NB Local Highway 200-999
+        },
+        "Nova Scotia": {
             'Hwy ([1-9]|[1-9]\d)\b': 5116, 					    // 5116: NS Trunk Hwy 1-99
             'Hwy (10[0-4])\b': 5115,					        // 5115: NS Arterial Hwy 100-104
             'Hwy (10[5-6])\b': 5000,					        // 5000: National Trans Canada Highway 105-106
-            'Hwy (10[7-9]|1[1-9]\d)\b' : 5115,				    // 5115: NS Aterial Hwy 107-199
-            'Hwy (20\d|2[1-9]\d|3\d{2})\b' : 5117				// 5117: NS Collector Hwy 200-399
-		},
-		"Newfoundland & Labrador": {
+            'Hwy (10[7-9]|1[1-9]\d)\b': 5115,				    // 5115: NS Aterial Hwy 107-199
+            'Hwy (20\d|2[1-9]\d|3\d{2})\b': 5117				// 5117: NS Collector Hwy 200-399
+        },
+        "Newfoundland & Labrador": {
             'Hwy 1': 5000, 							            // 5000: National - Trans-Canada Hwy 1
-            'Hwy ([2-9]|[1-9]\d|[1-5]\d{2})\b' : 5129			// NLR: Newfoundland Labrador Route 2-599
-		},
-		"Prince Edward Island": {
+            'Hwy ([2-9]|[1-9]\d|[1-5]\d{2})\b': 5129			// NLR: Newfoundland Labrador Route 2-599
+        },
+        "Prince Edward Island": {
             'Rte 1$': 5000,							            // 5000: National Trans-Canada Hwy
-            'Rte ([2-9]|[1-9]\d{1,2})\b' : 5144				    // 5144: PEI - Provincial Highway
-		},
-		"Yukon": {
+            'Rte ([2-9]|[1-9]\d{1,2})\b': 5144				    // 5144: PEI - Provincial Highway
+        },
+        "Yukon": {
             'Hwy 1': 5145, 							            // 5145: Yukon - Territorial Hwy - Orange
             'Hwy 2': 5146, 							            // 5146: Yukon - Territorial Hwy - Amber
             'Hwy 3': 5147, 							            // 5147: Yukon - Territorial Hwy - Maroon
@@ -122,11 +122,11 @@ const RoadAbbr = {
             'Hwy 10': 5151, 						            // 5151: Yukon - Territorial Hwy - Black
             'Hwy 11': 5149, 						            // 5149: Yukon - Territorial Hwy - Blue
             'Hwy 37': 5147 							            // 5147: Yukon - Territorial Hwy - Maroon
-		},
-		"Northwest Territories": {
+        },
+        "Northwest Territories": {
             'Hwy ([1-9]|10)\b': 5152					        // 5152: NWT - Territorial Hwy 1-10
-		}
-	},
+        }
+    },
     // France
     73: {
         '': {
@@ -153,14 +153,14 @@ const RoadAbbr = {
     // Ukraine
     232: {
         '': {
-           '(E[0-9]{2,3})': 1048,
-           '(М-[0-9]{2})': 1071,
-           '(Н-[0-9]{2})': 1071,
-           '(Р-[0-9]{2})': 1008,
-           '(Т-[0-9]{2}-[0-9]{2,3})': 1008,
-           '(О[0-9]{6,7})': 1085,
-           '(С[0-9]{6,7})': 1085
-       } 
+            '(E[0-9]{2,3})': 1048,
+            '(М-[0-9]{2})': 1071,
+            '(Н-[0-9]{2})': 1071,
+            '(Р-[0-9]{2})': 1008,
+            '(Т-[0-9]{2}-[0-9]{2,3})': 1008,
+            '(О[0-9]{6,7})': 1085,
+            '(С[0-9]{6,7})': 1085
+        }
     },
     // US
     235: {
@@ -195,7 +195,7 @@ const RoadAbbr = {
             "CR-": 2002,
             "SH-": 1082,
             "SR-": 1082
-        },   
+        },
         "Colorado": {
             'I-': 5,
             'US-': 6,
@@ -572,9 +572,9 @@ const RoadAbbr = {
     },
     // Uruguay
     236: {
-       '': {
-           'Ruta': 1111
-       } 
+        '': {
+            'Ruta': 1111
+        }
     },
 
     // Réunion
@@ -695,7 +695,7 @@ const Strings = {
         'checkTTS': 'Include TTS field',
         'checkVI': 'Include Visual Instruction field'
     },
-    'es-419' : {
+    'es-419': {
         'enableScript': 'Script habilitado',
         'HighSegShields': 'Segmentos con escudos',
         'HighSegShieldsClr': 'Segmentos con escudos',
@@ -733,34 +733,34 @@ const Strings = {
         'checkVI': 'Include Visual Instruction field'
     },
     'uk': {
-        "enableScript":"Скріпт ввімкнено",
-        "HighSegShields":"Сегменти з шильдами",
-        "HighSegShieldsClr":"Сегменти з шильдами",
-        "ShowSegShields":"Показувати шильди на мапі",
-        "SegShieldMissing":"Сегменти, яким можливо потрібні шильди",
-        "SegShieldMissingClr":"Сегменти, яким можливо потрібні шильди",
-        "SegShieldError":"Сегменти, які мають шильди, але можливо вони непотрібні",
-        "SegShieldErrorClr":"Сегменти, які мають шильди, але можливо вони непотрібні",
-        "HighNodeShields":"Вузли з шильдами (TG)",
-        "HighNodeShieldsClr":"Вузли з шильдами (TG)",
-        "ShowNodeShields":"Показувати деталі шильда на вузлі ",
-        "ShowExitShields":"Включити іконку повороту (якщо вони є)",
-        "ShowTurnTTS":"Ввімкнути TTS",
-        "AlertTurnTTS":"Сповіщати, якщо TTS відрізняється від типового",
-        "NodeShieldMissing":"Вузли, на яких можуть бути відсутні щити",
-        "NodeShieldMissingClr":"Вузли, на яких можуть бути відсутні щити",
-        "resetSettings":"Скинути налаштування",
-        "disabledFeat":"Відсутні налаштування для цієї страни",
-        "ShowTowards":"Включаючи Towards (якщо існує)",
-        "ShowVisualInst":"Включаючи візуальні інструкції",
-        "SegHasDir":"Шильди з напрямками",
-        "SegHasDirClr":"Шильди з напрямками",
-        "SegInvDir":"Шильди без напрямків",
-        "SegInvDirClr":"Шильди без напрямків",
-        "IconHead":"Іконки на мапі",
-        "HighlightHead":"Підсвічувати",
-        "HighlightColors":"Кольори підсвічування",
-        "ShowRamps":"Включаючи рампи",
+        "enableScript": "Скріпт ввімкнено",
+        "HighSegShields": "Сегменти з шильдами",
+        "HighSegShieldsClr": "Сегменти з шильдами",
+        "ShowSegShields": "Показувати шильди на мапі",
+        "SegShieldMissing": "Сегменти, яким можливо потрібні шильди",
+        "SegShieldMissingClr": "Сегменти, яким можливо потрібні шильди",
+        "SegShieldError": "Сегменти, які мають шильди, але можливо вони непотрібні",
+        "SegShieldErrorClr": "Сегменти, які мають шильди, але можливо вони непотрібні",
+        "HighNodeShields": "Вузли з шильдами (TG)",
+        "HighNodeShieldsClr": "Вузли з шильдами (TG)",
+        "ShowNodeShields": "Показувати деталі шильда на вузлі ",
+        "ShowExitShields": "Включити іконку повороту (якщо вони є)",
+        "ShowTurnTTS": "Ввімкнути TTS",
+        "AlertTurnTTS": "Сповіщати, якщо TTS відрізняється від типового",
+        "NodeShieldMissing": "Вузли, на яких можуть бути відсутні щити",
+        "NodeShieldMissingClr": "Вузли, на яких можуть бути відсутні щити",
+        "resetSettings": "Скинути налаштування",
+        "disabledFeat": "Відсутні налаштування для цієї страни",
+        "ShowTowards": "Включаючи Towards (якщо існує)",
+        "ShowVisualInst": "Включаючи візуальні інструкції",
+        "SegHasDir": "Шильди з напрямками",
+        "SegHasDirClr": "Шильди з напрямками",
+        "SegInvDir": "Шильди без напрямків",
+        "SegInvDirClr": "Шильди без напрямків",
+        "IconHead": "Іконки на мапі",
+        "HighlightHead": "Підсвічувати",
+        "HighlightColors": "Кольори підсвічування",
+        "ShowRamps": "Включаючи рампи",
         'mHPlus': 'Only show on minor highways or greater',
         'titleCase': 'Segments/nodes with direction not in large-and-small-caps format',
         'TitleCaseClr': 'Segments/nodes with direction not in large-and-small-caps format',
@@ -770,41 +770,41 @@ const Strings = {
         'checkVI': 'Include Visual Instruction field'
     },
     'fr': {
-        "enableScript":"Script activé",
-        "HighSegShields":"Segments avec cartouche",
-        "HighSegShieldsClr":"Segments avec cartouche",
-        "ShowSegShields":"Afficher les cartouches sur la carte", 
-        "SegShieldMissing":"Segments dont le cartouche pourrait manquer", 
-        "SegShieldMissingClr":"Segments dont le cartouche pourrait manquer", 
-        "SegShieldError":"Segments ayant un cartouche mais ne devraient peut-être pas", 
-        "SegShieldErrorClr":"Segments ayant un cartouche mais ne devraient peut-être pas", 
-        "HighNodeShields":"Noeuds avec cartouche (TG)", 
-        "HighNodeShieldsClr":"Noeuds avec cartouche (TG)", 
-        "ShowNodeShields":"Afficher les infos des cartouches de noeuds", 
-        "ShowExitShields":"As des panneaux de sortie", 
-        "ShowTurnTTS":"Has TIO", 
-        "AlertTurnTTS":"Alert if TTS is different from default", 
-        "NodeShieldMissing":"Noeud dont le cartouche pourrait manquer", 
-        "NodeShieldMissingClr":"Noeud dont le cartouche pourrait manquer", 
-        "resetSettings":"Réinitialiser les paramètres", 
-        "disabledFeat":"Feature not configured for this country", 
-        "ShowTowards":'As "En direction de"', 
-        "ShowVisualInst":"As des instructions visuelles", 
-        "SegHasDir":"Cartouche de segment avec direction", 
-        "SegHasDirClr":"Cartouche de segment avec direction", 
-        "SegInvDir":"Cartouche de segment sans direction", 
-        "SegInvDirClr":"Cartouche de segment sans direction", 
-        "IconHead":"Icônes de carte", 
-        "HighlightHead":"Surlignages", 
-        "HighlightColors":"Couleurs de surlignage", 
-        "ShowRamps":"Inclure les bretelles", 
-        "mHPlus":"Only show on minor highways or greater", 
-        "titleCase":"Segments/nodes with direction not in large-and-small-caps format", 
-        "TitleCaseClr":"Segments/nodes with direction not in large-and-small-caps format", 
-        "TitleCaseSftClr":"Direction in free text might not be in large-and-small-caps format", 
-        "checkTWD":'Inclure le champ "en direction de"', 
-        "checkTTS":"Inclure le champ TTS", 
-        "checkVI":"Inclure le champ d'instruction visuel"
+        "enableScript": "Script activé",
+        "HighSegShields": "Segments avec cartouche",
+        "HighSegShieldsClr": "Segments avec cartouche",
+        "ShowSegShields": "Afficher les cartouches sur la carte",
+        "SegShieldMissing": "Segments dont le cartouche pourrait manquer",
+        "SegShieldMissingClr": "Segments dont le cartouche pourrait manquer",
+        "SegShieldError": "Segments ayant un cartouche mais ne devraient peut-être pas",
+        "SegShieldErrorClr": "Segments ayant un cartouche mais ne devraient peut-être pas",
+        "HighNodeShields": "Noeuds avec cartouche (TG)",
+        "HighNodeShieldsClr": "Noeuds avec cartouche (TG)",
+        "ShowNodeShields": "Afficher les infos des cartouches de noeuds",
+        "ShowExitShields": "As des panneaux de sortie",
+        "ShowTurnTTS": "Has TIO",
+        "AlertTurnTTS": "Alert if TTS is different from default",
+        "NodeShieldMissing": "Noeud dont le cartouche pourrait manquer",
+        "NodeShieldMissingClr": "Noeud dont le cartouche pourrait manquer",
+        "resetSettings": "Réinitialiser les paramètres",
+        "disabledFeat": "Feature not configured for this country",
+        "ShowTowards": 'As "En direction de"',
+        "ShowVisualInst": "As des instructions visuelles",
+        "SegHasDir": "Cartouche de segment avec direction",
+        "SegHasDirClr": "Cartouche de segment avec direction",
+        "SegInvDir": "Cartouche de segment sans direction",
+        "SegInvDirClr": "Cartouche de segment sans direction",
+        "IconHead": "Icônes de carte",
+        "HighlightHead": "Surlignages",
+        "HighlightColors": "Couleurs de surlignage",
+        "ShowRamps": "Inclure les bretelles",
+        "mHPlus": "Only show on minor highways or greater",
+        "titleCase": "Segments/nodes with direction not in large-and-small-caps format",
+        "TitleCaseClr": "Segments/nodes with direction not in large-and-small-caps format",
+        "TitleCaseSftClr": "Direction in free text might not be in large-and-small-caps format",
+        "checkTWD": 'Inclure le champ "en direction de"',
+        "checkTTS": "Inclure le champ TTS",
+        "checkVI": "Inclure le champ d'instruction visuel"
     }
 };
 const CheckAltName = [
@@ -1000,7 +1000,7 @@ function initRSA() {
             </div>
         </div>`
     ].join(' '));
-    
+
     const $rsaFixWrapper = $('<div id="rsa-autoWrapper" class="toolbar-button ItemInactive" style="display:none;margin-right:5px;">');
     const $rsaFixInner = $('<div class="group-title toolbar-top-level-item-title rsa" style="margin:5px 0 0 15px;font-size:12px;">RSA Fix</div>');
 
@@ -1135,7 +1135,7 @@ async function setupOptions() {
     //     if (!getId('rsa-ShowNodeShields').checked) $('.rsa-option-container.sub').hide();
     //     else $('.rsa-option-container.sub').show();
     // });
-    $('#rsa-resetSettings').click(function() {
+    $('#rsa-resetSettings').click(function () {
         const defaultSettings = {
             lastSaveAction: 0,
             enableScript: true,
@@ -1169,7 +1169,7 @@ async function setupOptions() {
     // Add translated UI text
     LANG = I18n.currentLocale().toLowerCase();
     if (!Strings[LANG]) LANG = 'en';
-    for (let i=0; i < Object.keys(Strings[LANG]).length; i++) {
+    for (let i = 0; i < Object.keys(Strings[LANG]).length; i++) {
         let key = Object.keys(Strings[LANG])[i]
         $(`#rsa-text-${key}`).text(Strings[LANG][key]);
     }
@@ -1309,7 +1309,7 @@ async function saveSettings() {
 
     // Grab keyboard shortcuts and store them for saving
     for (const name in W.accelerators.Actions) {
-        const {shortcut, group} = W.accelerators.Actions[name];
+        const { shortcut, group } = W.accelerators.Actions[name];
         if (group === 'wmersa') {
             let TempKeys = '';
             if (shortcut) {
@@ -1360,12 +1360,12 @@ function checkOptions() {
     const countries = W.model.countries.getObjectArray();
 
     if (countries.length < 1) {
-        setTimeout(function() { checkOptions(); }, 500);
+        setTimeout(function () { checkOptions(); }, 500);
         return;
     } else {
         let allowFeat = false;
 
-        for (let i=0; i < countries.length; i++) {
+        for (let i = 0; i < countries.length; i++) {
             if (RoadAbbr[countries[i].id]) allowFeat = true;
         }
 
@@ -1418,19 +1418,19 @@ function autoFixButton() {
 
     // console.log(BadNames);
     // Create function to fix case types when button clicked
-    $('#rsa-autoWrapper > div').click(function() {
+    $('#rsa-autoWrapper > div').click(function () {
         const turnGraph = W.model.getTurnGraph();
 
-        for (let i=0; i < BadNames.length; i++) {
+        for (let i = 0; i < BadNames.length; i++) {
             // Check if street or turn
             if (BadNames[i].type) {
                 let strt = BadNames[i];
                 let dir = strt.direction;
 
-                if (dir.match(/\b(north)\b/i) != null)  dir = 'Nᴏʀᴛʜ';
-                if (dir.match(/\b(south)\b/i) != null)  dir = 'Sᴏᴜᴛʜ';
-                if (dir.match(/\b(east)\b/i) != null)  dir = 'Eᴀꜱᴛ';
-                if (dir.match(/\b(west)\b/i) != null)  dir = 'Wᴇꜱᴛ';
+                if (dir.match(/\b(north)\b/i) != null) dir = 'Nᴏʀᴛʜ';
+                if (dir.match(/\b(south)\b/i) != null) dir = 'Sᴏᴜᴛʜ';
+                if (dir.match(/\b(east)\b/i) != null) dir = 'Eᴀꜱᴛ';
+                if (dir.match(/\b(west)\b/i) != null) dir = 'Wᴇꜱᴛ';
 
                 W.model.actionManager.add(new UpdateObj(strt, { 'direction': dir }));
             } else {
@@ -1480,7 +1480,7 @@ function addShieldClick() {
         WazeWrap.Alerts.error(GM_info.script.name, 'You must have only 1 segment selected to use the shield editing menu');
     }
 
-    
+
 }
 
 function tryScan() {
@@ -1492,9 +1492,9 @@ function tryScan() {
     function scanNode(node) {
         let conSegs = node.attributes.segIDs;
 
-        for (let i=0; i < conSegs.length; i++) {
+        for (let i = 0; i < conSegs.length; i++) {
             let seg1 = W.model.segments.getObjectById(conSegs[i]);
-            for (let j=0; j < conSegs.length; j++) {
+            for (let j = 0; j < conSegs.length; j++) {
                 let seg2 = W.model.segments.getObjectById(conSegs[j]);
                 processNode(node, seg1, seg2);
             }
@@ -1511,7 +1511,7 @@ function tryScan() {
         // Scan all segments with same street as selected
         if (!rsaSettings.ShowSegShields && !rsaSettings.SegShieldMissing && !rsaSettings.SegShieldError && !rsaSettings.HighSegShields && !rsaSettings.titleCase)
             return;
-            
+
         _.each(W.model.segments.getObjectArray(), s => {
             selFea.forEach(selected => {
                 if (selected.model.type === 'segment' && selected.model.attributes.primaryStreetID === s.attributes.primaryStreetID) {
@@ -1592,7 +1592,7 @@ function processSeg(seg, showNode = false) {
 }
 
 function processNode(node, seg1, seg2) {
-    let turn = W.model.getTurnGraph().getTurnThroughNode(node,seg1,seg2);
+    let turn = W.model.getTurnGraph().getTurnThroughNode(node, seg1, seg2);
     let turnData = turn.getTurnData();
     let hasGuidence = turnData.hasTurnGuidance();
 
@@ -1602,13 +1602,13 @@ function processNode(node, seg1, seg2) {
         if (rsaSettings.titleCase) {
             let badName = matchTitleCaseThroughNode(turn);
             if (badName.isBad === true) {
-                let color = badName.softIssue ? rsaSettings.TitleCaseSftClr: rsaSettings.TitleCaseClr;
+                let color = badName.softIssue ? rsaSettings.TitleCaseSftClr : rsaSettings.TitleCaseClr;
                 createHighlight(node, color, true);
                 // autoFixButton();
             }
         }
     }
-    
+
 }
 
 // Function written by kpouer to accommodate French conventions of shields being based on alt names
@@ -1646,7 +1646,7 @@ function isStreetCandidate(street, state, country) {
     const name = street.name;
     const abbrvs = noStates ? RoadAbbr[country][''] : RoadAbbr[country][state];
 
-    for (let i=0; i < Object.keys(abbrvs).length; i++) {
+    for (let i = 0; i < Object.keys(abbrvs).length; i++) {
         if (name) {
             if (noStates) {
                 const abrKey = Object.keys(abbrvs)[i];
@@ -1666,7 +1666,7 @@ function isStreetCandidate(street, state, country) {
                     info.isCandidate = true;
                     info.iconID = abbrvs[abbr];
                 }
-            } 
+            }
         }
     }
     return info;
@@ -1677,7 +1677,7 @@ function isValidShield(segAtt) {
     if (primaryStreet.name === primaryStreet.signText) {
         return true;
     }
-    for (var i = 0;i<segAtt.streetIDs.length;i++) {
+    for (var i = 0; i < segAtt.streetIDs.length; i++) {
         let street = W.model.streets.getObjectById(segAtt.streetIDs[i]);
         if (street.name === primaryStreet.signText) {
             return true;
@@ -1692,14 +1692,14 @@ function matchTitleCase(street) {
     if (dir !== '' && dir !== null) {
         // console.log(dir);
         if (dir.match(/\b(north|south|east|west)\b/i) != null) isBad = true;
-        if (dir.match(/([ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘʀꜱᴛᴜᴠᴡʏᴢ][a-z]|[a-z][ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘʀꜱᴛᴜᴠᴡʏᴢ])/)  != null) isBad = true;
+        if (dir.match(/([ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘʀꜱᴛᴜᴠᴡʏᴢ][a-z]|[a-z][ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘʀꜱᴛᴜᴠᴡʏᴢ])/) != null) isBad = true;
 
         if (isBad === true) {
             if (BadNames.length === 0) {
                 BadNames.push(street);
             } else {
                 let isDuplicate = false;
-                for (let i=0; i < BadNames.length; i++) {
+                for (let i = 0; i < BadNames.length; i++) {
                     // if (BadNames[i].type) console.log(BadNames[i].id === street.id);
                     if (BadNames[i].type && BadNames[i].id === street.id) isDuplicate = true;
                 }
@@ -1855,7 +1855,7 @@ function displayNodeIcons(node, turnDat) {
             let xpoint;
             let ypoint;
 
-            switch(count) {
+            switch (count) {
                 case 0:
                     xpoint = lblStart.x;
                     ypoint = lblStart.y;
@@ -1868,7 +1868,7 @@ function displayNodeIcons(node, turnDat) {
                     xpoint = lblStart.x;
                     ypoint = lblStart.y - LabelDistance().icon;
                     break;
-                case 3: 
+                case 3:
                     xpoint = lblStart.x + LabelDistance().icon;
                     ypoint = lblStart.y - LabelDistance().icon;
                     break;
@@ -1914,7 +1914,7 @@ function displaySegShields(segment, shieldID, shieldText, shieldDir) {
     oldparam.x = null;
     oldparam.y = null;
     let AtLeastOne = false;
-    $.each(segment.geometry.getVertices(), function(idx, param) {
+    $.each(segment.geometry.getVertices(), function (idx, param) {
         // Build a new segment with same geometry
         SegmentPoints.push(new OpenLayers.Geometry.Point(param.x, param.y));
 
@@ -1936,11 +1936,11 @@ function displaySegShields(segment, shieldID, shieldText, shieldDir) {
         };
 
         if (oldparam.x !== null && oldparam.y !== null) {
-            if ( Math.abs(oldparam.x - param.x) > labelDis.space || Math.abs(oldparam.y - param.y) > labelDis.space  || AtLeastOne === false) {
+            if (Math.abs(oldparam.x - param.x) > labelDis.space || Math.abs(oldparam.y - param.y) > labelDis.space || AtLeastOne === false) {
                 let centerparam = {};
                 centerparam.x = ((oldparam.x + param.x) / 2);
                 centerparam.y = ((oldparam.y + param.y) / 2);
-                if ( Math.abs(centerparam.x - param.x) > labelDis.space || Math.abs(centerparam.y - param.y) > labelDis.space || AtLeastOne === false) {
+                if (Math.abs(centerparam.x - param.x) > labelDis.space || Math.abs(centerparam.y - param.y) > labelDis.space || AtLeastOne === false) {
                     LabelPoint = new OpenLayers.Geometry.Point(centerparam.x, centerparam.y);
                     const pointFeature = new OpenLayers.Feature.Vector(LabelPoint, null, style);
                     // Create point for direction label below shield icon
@@ -1985,7 +1985,7 @@ function createHighlight(obj, color, overSized = false) {
             fillColor: color,
             fillOpacity: 0.75
         }
-        const newFeat =  new OpenLayers.Geometry.LineString(geo.components, {});
+        const newFeat = new OpenLayers.Geometry.LineString(geo.components, {});
         const newVector = new OpenLayers.Feature.Vector(newFeat, null, style);
         rsaMapLayer.addFeatures([newVector]);
     }
