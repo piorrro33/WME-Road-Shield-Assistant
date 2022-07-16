@@ -1176,6 +1176,7 @@ async function setupOptions() {
     $('#rsa-resetSettings').attr('value', Strings[LANG]['resetSettings']);
 
     checkOptions();
+    tryScan();
 }
 
 async function loadSettings() {
@@ -1506,8 +1507,18 @@ function tryScan() {
 
     removeHighlights();
     let selFea = W.selectionManager.getSelectedFeatures();
-    if (selFea && selFea.length > 0) {
-        // if (selFea.model.type === 'segment') scanSeg(selFea.model, true);
+    if (selFea && selFea.length > 0 && selFea.length <= 15) {
+        // Scan all segments with same street as selected
+        if (!rsaSettings.ShowSegShields && !rsaSettings.SegShieldMissing && !rsaSettings.SegShieldError && !rsaSettings.HighSegShields && !rsaSettings.titleCase)
+            return;
+            
+        _.each(W.model.segments.getObjectArray(), s => {
+            selFea.forEach(selected => {
+                if (selected.model.type === 'segment' && selected.model.attributes.primaryStreetID === s.attributes.primaryStreetID) {
+                    scanSeg(s);
+                }
+            })
+        });
     } else {
         // Scan all segments on screen
         if (rsaSettings.ShowSegShields || rsaSettings.SegShieldMissing || rsaSettings.SegShieldError || rsaSettings.HighSegShields || rsaSettings.titleCase) {
@@ -1521,7 +1532,6 @@ function tryScan() {
                 scanNode(n);
             });
         }
-       
     }
 }
 
@@ -1530,8 +1540,9 @@ function processSeg(seg, showNode = false) {
     let street = W.model.streets.getObjectById(segAtt.primaryStreetID);
     let cityID = W.model.cities.getObjectById(street.cityID);
     let stateName = W.model.states.getObjectById(cityID.attributes.stateID).name;
-    let countryID = cityID.attributes.countryID;
-    let candidate = isSegmentCandidate(segAtt, stateName, countryID);
+    let country = W.model.getTopCountry();
+    let segmentCandidate = isSegmentCandidate(segAtt, stateName, country.id);
+    let primaryStreetCandidate = isStreetCandidate(street, stateName, country.id);
     let hasShield = street.signType !== null;
 
     // Exlude ramps
@@ -1544,7 +1555,7 @@ function processSeg(seg, showNode = false) {
     if (hasShield && rsaSettings.ShowSegShields) displaySegShields(seg, street.signType, street.signText, street.direction);
 
     // If candidate and has shield
-    if (candidate.isCandidate && hasShield && rsaSettings.HighSegShields) {
+    if (segmentCandidate.isCandidate && hasShield && rsaSettings.HighSegShields) {
         if (isValidShield(segAtt)) {
             createHighlight(seg, rsaSettings.HighSegClr);
         } else {
@@ -1553,10 +1564,18 @@ function processSeg(seg, showNode = false) {
     }
 
     // If candidate and missing shield
-    if (candidate.isCandidate && !hasShield && rsaSettings.SegShieldMissing) createHighlight(seg, rsaSettings.MissSegClr);
+    if (segmentCandidate.isCandidate && !hasShield && rsaSettings.SegShieldMissing) createHighlight(seg, rsaSettings.MissSegClr);
 
     // If not candidate and has shield
-    if (!candidate.isCandidate && hasShield && rsaSettings.SegShieldError) createHighlight(seg, rsaSettings.ErrSegClr);
+    if (country.name === "France") {
+        if ((!segmentCandidate.isCandidate || !primaryStreetCandidate.isCandidate) && hasShield && rsaSettings.SegShieldError) {
+            createHighlight(seg, rsaSettings.ErrSegClr);
+        }
+    } else {
+        if (!candidate.isCandidate && hasShield && rsaSettings.SegShieldError) {
+            createHighlight(seg, rsaSettings.ErrSegClr);
+        }
+    }
 
     // Highlight seg shields with direction
     if (hasShield && street.direction && rsaSettings.SegHasDir) createHighlight(seg, rsaSettings.SegHasDirClr);
