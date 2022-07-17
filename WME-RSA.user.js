@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WME Road Shield Assistant
 // @namespace    https://greasyfork.org/en/users/286957-skidooguy
-// @version      2022.07.17.01
+// @version      2022.07.17.02
 // @description  Adds shield information display to WME 
 // @author       SkiDooGuy
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
@@ -20,9 +20,17 @@
 const GF_LINK = "https://greasyfork.org/en/scripts/425050-wme-road-shield-assisstant";
 const FORUM_LINK = "https://www.waze.com/forum/viewtopic.php?f=1851&t=315748";
 const RSA_UPDATE_NOTES = `<b>NEW:</b><br>
-- Updated shields for Canada<br><br>
+<ul>
+    <li>Highlight rules for countries with roadshields on alt names (France)</li>
+    <li>Varying highlighting based on selection</li>
+</ul>
+<br>
 <b>FIXES:</b><br>
-- No longer highlights alt street names when it shouldn't<br><br>`;
+<ul>
+    <li>Small optimizations</li>
+    <li>Segments and nodes are highlighted when opening the editor, no need to move the map anymore</li>
+    <li>Pretty large code refactor</li>
+</ul>`;
 
 let [zm0, zm1, zm2, zm3, zm4, zm5, zm6, zm7, zm8, zm9, zm10] = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
 
@@ -1418,19 +1426,19 @@ function tryScan() {
     BadNames = [];
 
     function scanNode(node) {
-        let conSegs = node.attributes.segIDs;
+        let conSegs = node.attributes.segIDs.map(s => W.model.segments.getObjectById(s));
 
         for (let i = 0; i < conSegs.length; i++) {
-            let seg1 = W.model.segments.getObjectById(conSegs[i]);
+            let seg1 = conSegs[i];
             for (let j = 0; j < conSegs.length; j++) {
-                let seg2 = W.model.segments.getObjectById(conSegs[j]);
+                let seg2 = conSegs[j];
                 processNode(node, seg1, seg2);
             }
         }
     }
 
     removeHighlights();
-    let selSegs = W.selectionManager.getSelectedFeatures().filter(f => f.model.type === "segment").map(f => f.model);
+    let selSegs = W.selectionManager.getSegmentSelection();
     // Scan all segments on screen
     if (rsaSettings.ShowSegShields || rsaSettings.SegShieldMissing || rsaSettings.SegShieldError || rsaSettings.HighSegShields || rsaSettings.titleCase) {
         W.model.segments.getObjectArray().forEach(s => processSeg(s, selSegs));
@@ -1456,7 +1464,7 @@ function processSeg(seg, selSegs) {
     let city = W.model.cities.getObjectById(primaryStreet.cityID);
     let state = W.model.states.getObjectById(city.attributes.stateID);
     let countryID = city.attributes.countryID;
-    let candidate = isSegmentCandidate(segAtt, state.name, countryID);
+    let candidate = isSegmentCandidate(segAtt, state.name, countryID, primaryStreet, altStreets);
     let segmentCandidate = candidate === CandidateType.Primary || candidate === CandidateType.Alt;
     let primaryStreetCandidate = candidate === CandidateType.Primary;
     let primaryShield = primaryStreet.signText;
@@ -1558,21 +1566,19 @@ function processNode(node, seg1, seg2) {
 }
 
 // Function written by kpouer to accommodate French conventions of shields being based on alt names
-function isSegmentCandidate(segAtt, state, country) {
-    let street = W.model.streets.getObjectById(segAtt.primaryStreetID);
-    let isCandidate = isStreetCandidate(street, state, country);
+function isSegmentCandidate(segAtt, state, country, primaryStreet, altStreets) {
+    let isCandidate = isStreetCandidate(primaryStreet, state, country);
     if (isCandidate) {
         return CandidateType.Primary;
     }
 
     if (CheckAltName.includes(country)) {
-        for (let i = 0; i < segAtt.streetIDs.length; i++) {
-            street = W.model.streets.getObjectById(segAtt.streetIDs[i]);
-            isCandidate = isStreetCandidate(street, state, country);
+        altStreets.forEach(s => {
+            isCandidate = isStreetCandidate(s, state, country);
             if (isCandidate) {
                 return CandidateType.Alt;
             }
-        }
+        })
     }
 
     return null;
