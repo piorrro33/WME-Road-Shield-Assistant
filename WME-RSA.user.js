@@ -26,6 +26,11 @@ const RSA_UPDATE_NOTES = `<b>NEW:</b><br>
 
 let [zm0, zm1, zm2, zm3, zm4, zm5, zm6, zm7, zm8, zm9, zm10] = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
 
+const CandidateType = {
+    Primary: "Primary",
+    Alt: "Alt"
+};
+
 const RoadAbbr = {
     //Canada    
     40: {
@@ -1428,27 +1433,32 @@ function tryScan() {
     let selSegs = W.selectionManager.getSelectedFeatures().filter(f => f.model.type === "segment").map(f => f.model);
     // Scan all segments on screen
     if (rsaSettings.ShowSegShields || rsaSettings.SegShieldMissing || rsaSettings.SegShieldError || rsaSettings.HighSegShields || rsaSettings.titleCase) {
-        _.each(W.model.segments.getObjectArray(), s => {
-            processSeg(s, selSegs);
-        });
+        W.model.segments.getObjectArray().forEach(s => processSeg(s, selSegs));
     }
     // Scan all nodes on screen
     if (rsaSettings.HighNodeShields || rsaSettings.ShowNodeShields || rsaSettings.titleCase) {
-        _.each(W.model.nodes.getObjectArray(), n => {
-            scanNode(n);
-        });
+        W.model.nodes.getObjectArray().forEach(n => scanNode(n));
     }
 }
 
 function processSeg(seg, selSegs) {
     let segAtt = seg.attributes;
+    // Exclude ramps
+    if (!rsaSettings.ShowRamps && segAtt.roadType === 4)
+        return;
+
+    // Only show mH and above
+    if (rsaSettings.mHPlus && segAtt.roadType !== 3 && segAtt.roadType !== 4 && segAtt.roadType !== 6 && segAtt.roadType !== 7)
+        return;
+
     let primaryStreet = W.model.streets.getObjectById(segAtt.primaryStreetID);
     let altStreets = segAtt.streetIDs.map(id => W.model.streets.getObjectById(id));
-    let cityID = W.model.cities.getObjectById(primaryStreet.cityID);
-    let stateName = W.model.states.getObjectById(cityID.attributes.stateID).name;
-    let country = W.model.getTopCountry();
-    let segmentCandidate = isSegmentCandidate(segAtt, stateName, country.id);
-    let primaryStreetCandidate = isStreetCandidate(primaryStreet, stateName, country.id);
+    let city = W.model.cities.getObjectById(primaryStreet.cityID);
+    let state = W.model.states.getObjectById(city.attributes.stateID);
+    let countryID = city.attributes.countryID;
+    let candidate = isSegmentCandidate(segAtt, state.name, countryID);
+    let segmentCandidate = candidate === CandidateType.Primary || candidate === CandidateType.Alt;
+    let primaryStreetCandidate = candidate === CandidateType.Primary;
     let primaryShield = primaryStreet.signText;
     let altShields = altStreets.map(street => street.signText);
 
@@ -1459,7 +1469,7 @@ function processSeg(seg, selSegs) {
             return opacity;
         }
         if (selSegs.length > 0) {
-            if (selSegs.find(sel => sel.attributes.primaryStreetID === seg.attributes.primaryStreetID)) {
+            if (selSegs.some(sel => sel.attributes.primaryStreetID === seg.attributes.primaryStreetID)) {
                 opacity = 1;
             } else {
                 opacity = 0.33;
@@ -1469,14 +1479,6 @@ function processSeg(seg, selSegs) {
         }
         return opacity;
     };
-
-    // Exclude ramps
-    if (!rsaSettings.ShowRamps && segAtt.roadType === 4)
-        return;
-
-    // Only show mH and above
-    if (rsaSettings.mHPlus && segAtt.roadType !== 3 && segAtt.roadType !== 4 && segAtt.roadType !== 6 && segAtt.roadType !== 7)
-        return;
 
     // Display shield on map
     if (rsaSettings.ShowSegShields && primaryShield) {
@@ -1494,10 +1496,10 @@ function processSeg(seg, selSegs) {
 
     // If candidate and missing (alt) shield
     if (rsaSettings.SegShieldMissing) {
-        if (CheckAltName.includes(country.id)) {
+        if (CheckAltName.includes(countryID)) {
             if (segmentCandidate && !primaryShield && altShields.length === 0) {
                 createHighlight(seg, rsaSettings.MissSegClr, getOpacity());
-            } else if (!primaryStreetCandidate && primaryShield && !altShields.find(s => s === primaryShield)) {
+            } else if (!primaryStreetCandidate && primaryShield && !altShields.some(s => s === primaryShield)) {
                 createHighlight(seg, rsaSettings.MissSegClr, getOpacity());
             }
         } else if (segmentCandidate && !primaryShield && altShields.length === 0) {
@@ -1508,7 +1510,7 @@ function processSeg(seg, selSegs) {
 
     // If not candidate and has shield
     if (rsaSettings.SegShieldError) {
-        if (CheckAltName.includes(country.id)) {
+        if (CheckAltName.includes(countryID)) {
             if ((!segmentCandidate || !primaryStreetCandidate) && primaryShield) {
                 createHighlight(seg, rsaSettings.ErrSegClr, getOpacity());
             }
@@ -1560,7 +1562,7 @@ function isSegmentCandidate(segAtt, state, country) {
     let street = W.model.streets.getObjectById(segAtt.primaryStreetID);
     let isCandidate = isStreetCandidate(street, state, country);
     if (isCandidate) {
-        return true;
+        return CandidateType.Primary;
     }
 
     if (CheckAltName.includes(country)) {
@@ -1568,11 +1570,12 @@ function isSegmentCandidate(segAtt, state, country) {
             street = W.model.streets.getObjectById(segAtt.streetIDs[i]);
             isCandidate = isStreetCandidate(street, state, country);
             if (isCandidate) {
-                return true;
+                return CandidateType.Alt;
             }
         }
     }
-    return false;
+
+    return null;
 }
 
 function isStreetCandidate(street, state, country) {
