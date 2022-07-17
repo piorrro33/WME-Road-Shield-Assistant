@@ -626,8 +626,8 @@ const Strings = {
         "HighSegShields": "Segments with Shields",
         "HighSegShieldsClr": "Segments with Shields",
         "ShowSegShields": "Show Segment Shields on Map",
-        "SegShieldMissing": "Segments that might be missing shields",
-        "SegShieldMissingClr": "Segments that might be missing shields",
+        "SegShieldMissing": "Segments that might be missing (alt)shields",
+        "SegShieldMissingClr": "Segments that might be missing (alt)shields",
         "SegShieldError": "Segments that have shields but maybe shouldn't",
         "SegShieldErrorClr": "Segments that have shields but maybe shouldn't",
         "HighNodeShields": "Nodes with Shields (TG)",
@@ -663,8 +663,8 @@ const Strings = {
         "HighSegShields": "Segments with Shields",
         "HighSegShieldsClr": "Segments with Shields",
         "ShowSegShields": "Show Segment Shields on Map",
-        "SegShieldMissing": "Segments that might be missing shields",
-        "SegShieldMissingClr": "Segments that might be missing shields",
+        "SegShieldMissing": "Segments that might be missing (alt)shields",
+        "SegShieldMissingClr": "Segments that might be missing (alt)shields",
         "SegShieldError": "Segments that have shields but maybe shouldn't",
         "SegShieldErrorClr": "Segments that have shields but maybe shouldn't",
         "HighNodeShields": "Nodes with Shields (TG)",
@@ -700,8 +700,8 @@ const Strings = {
         "HighSegShields": "Segmentos con escudos",
         "HighSegShieldsClr": "Segmentos con escudos",
         "ShowSegShields": "Mostrar escudos de segmentos en el mapa",
-        "SegShieldMissing": "Segmentos a los que les pueden faltar escudos",
-        "SegShieldMissingClr": "Segmentos a los que les pueden faltar escudos",
+        "SegShieldMissing": "Segmentos a los que les pueden faltar (alt)escudos",
+        "SegShieldMissingClr": "Segmentos a los que les pueden faltar (alt)escudos",
         "SegShieldError": "Segmentos que tienen escudos y quizá no deberían",
         "SegShieldErrorClr": "Segmentos que tienen escudos y quizá no deberían",
         "HighNodeShields": "Nodos con escudos (TG)",
@@ -737,8 +737,8 @@ const Strings = {
         "HighSegShields": "Сегменти з шильдами",
         "HighSegShieldsClr": "Сегменти з шильдами",
         "ShowSegShields": "Показувати шильди на мапі",
-        "SegShieldMissing": "Сегменти, яким можливо потрібні шильди",
-        "SegShieldMissingClr": "Сегменти, яким можливо потрібні шильди",
+        "SegShieldMissing": "Сегменти, яким можливо потрібні (альт) шильди",
+        "SegShieldMissingClr": "Сегменти, яким можливо потрібні (альт) шильди",
         "SegShieldError": "Сегменти, які мають шильди, але можливо вони непотрібні",
         "SegShieldErrorClr": "Сегменти, які мають шильди, але можливо вони непотрібні",
         "HighNodeShields": "Вузли з шильдами (TG)",
@@ -774,8 +774,8 @@ const Strings = {
         "HighSegShields": "Segments avec cartouche",
         "HighSegShieldsClr": "Segments avec cartouche",
         "ShowSegShields": "Afficher les cartouches sur la carte",
-        "SegShieldMissing": "Segments dont le cartouche pourrait manquer",
-        "SegShieldMissingClr": "Segments dont le cartouche pourrait manquer",
+        "SegShieldMissing": "Segments dont le cartouche ou l'alt pourrait manquer",
+        "SegShieldMissingClr": "Segments dont le cartouche ou l'alt pourrait manquer",
         "SegShieldError": "Segments ayant un cartouche mais ne devraient peut-être pas",
         "SegShieldErrorClr": "Segments ayant un cartouche mais ne devraient peut-être pas",
         "HighNodeShields": "Noeuds avec cartouche (TG)",
@@ -1442,30 +1442,19 @@ function tryScan() {
 
 function processSeg(seg, selSegs) {
     let segAtt = seg.attributes;
-    let street = W.model.streets.getObjectById(segAtt.primaryStreetID);
-    let cityID = W.model.cities.getObjectById(street.cityID);
+    let primaryStreet = W.model.streets.getObjectById(segAtt.primaryStreetID);
+    let altStreets = segAtt.streetIDs.map(id => W.model.streets.getObjectById(id));
+    let cityID = W.model.cities.getObjectById(primaryStreet.cityID);
     let stateName = W.model.states.getObjectById(cityID.attributes.stateID).name;
     let country = W.model.getTopCountry();
     let segmentCandidate = isSegmentCandidate(segAtt, stateName, country.id);
-    let primaryStreetCandidate = isStreetCandidate(street, stateName, country.id);
-    let hasShield = street.signType !== null;
-
-    // Exlude ramps
-    if (!rsaSettings.ShowRamps && segAtt.roadType === 4)
-        return;
-
-    // Only show mH and above
-    if (rsaSettings.mHPlus && segAtt.roadType !== 3 && segAtt.roadType !== 4 && segAtt.roadType !== 6 && segAtt.roadType !== 7)
-        return;
-
-    // Display shield on map
-    if (hasShield && rsaSettings.ShowSegShields) {
-        displaySegShields(seg, street.signType, street.signText, street.direction);
-    }
+    let primaryStreetCandidate = isStreetCandidate(primaryStreet, stateName, country.id);
+    let primaryShield = primaryStreet.signText;
+    let altShields = altStreets.map(street => street.signText);
 
     // Compute opacity only when needed with a closure
     let opacity = null;
-    let computeOpacity = () => {
+    let getOpacity = () => {
         if (opacity !== null) {
             return opacity;
         }
@@ -1481,42 +1470,64 @@ function processSeg(seg, selSegs) {
         return opacity;
     };
 
+    // Exclude ramps
+    if (!rsaSettings.ShowRamps && segAtt.roadType === 4)
+        return;
+
+    // Only show mH and above
+    if (rsaSettings.mHPlus && segAtt.roadType !== 3 && segAtt.roadType !== 4 && segAtt.roadType !== 6 && segAtt.roadType !== 7)
+        return;
+
+    // Display shield on map
+    if (rsaSettings.ShowSegShields && primaryShield) {
+        displaySegShields(seg, primaryStreet.signType, primaryStreet.signText, primaryStreet.direction);
+    }
+
     // If candidate and has shield
-    if (segmentCandidate.isCandidate && hasShield && rsaSettings.HighSegShields) {
+    if (rsaSettings.HighSegShields && segmentCandidate.isCandidate && primaryShield) {
         if (isValidShield(segAtt)) {
-            createHighlight(seg, rsaSettings.HighSegClr, computeOpacity());
+            createHighlight(seg, rsaSettings.HighSegClr, getOpacity());
         } else {
-            createHighlight(seg, rsaSettings.ErrSegClr, computeOpacity());
+            createHighlight(seg, rsaSettings.ErrSegClr, getOpacity());
         }
     }
 
     // If candidate and missing shield
-    if (segmentCandidate.isCandidate && !hasShield && rsaSettings.SegShieldMissing) {
-        createHighlight(seg, rsaSettings.MissSegClr, computeOpacity());
+    if (rsaSettings.SegShieldMissing) {
+        if (CheckAltName.includes(country.id)) {
+            if (segmentCandidate.isCandidate && !primaryShield && altShields.length === 0) {
+                createHighlight(seg, rsaSettings.MissSegClr, getOpacity());
+            } else if (!primaryStreetCandidate.isCandidate && primaryShield && !altShields.find(s => s === primaryShield)) {
+                createHighlight(seg, rsaSettings.MissSegClr, getOpacity());
+            }
+        } else if (segmentCandidate.isCandidate && !primaryShield && altShields.length === 0) {
+            createHighlight(seg, rsaSettings.MissSegClr, getOpacity());
+        }
     }
 
+
     // If not candidate and has shield
-    if (country.name === "France") {
-        if ((!segmentCandidate.isCandidate || !primaryStreetCandidate.isCandidate) && hasShield && rsaSettings.SegShieldError) {
-            createHighlight(seg, rsaSettings.ErrSegClr, computeOpacity());
-        }
-    } else {
-        if (!candidate.isCandidate && hasShield && rsaSettings.SegShieldError) {
-            createHighlight(seg, rsaSettings.ErrSegClr, computeOpacity());
+    if (rsaSettings.SegShieldError) {
+        if (CheckAltName.includes(country.id)) {
+            if ((!segmentCandidate.isCandidate || !primaryStreetCandidate.isCandidate) && primaryShield) {
+                createHighlight(seg, rsaSettings.ErrSegClr, getOpacity());
+            }
+        } else if (!segmentCandidate.isCandidate && primaryShield) {
+            createHighlight(seg, rsaSettings.ErrSegClr, getOpacity());
         }
     }
 
     // Highlight seg shields with direction
-    if (hasShield && street.direction && rsaSettings.SegHasDir) {
-        createHighlight(seg, rsaSettings.SegHasDirClr, computeOpacity());
+    if (rsaSettings.SegHasDir && primaryShield && primaryStreet.direction) {
+        createHighlight(seg, rsaSettings.SegHasDirClr, getOpacity());
     }
-    if (hasShield && !street.direction && rsaSettings.SegInvDir) {
-        createHighlight(seg, rsaSettings.SegInvDirClr, computeOpacity());
+    if (rsaSettings.SegInvDir && primaryShield && !primaryStreet.direction) {
+        createHighlight(seg, rsaSettings.SegInvDirClr, getOpacity());
     }
 
     // Streets without capitalized letters
     if (rsaSettings.titleCase) {
-        const badName = matchTitleCase(street);
+        const badName = matchTitleCase(primaryStreet);
         if (badName === true) {
             createOversizedHighlight(seg, rsaSettings.TitleCaseClr);
         }
