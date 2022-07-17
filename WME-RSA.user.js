@@ -1424,41 +1424,23 @@ function tryScan() {
         }
     }
 
-    function scanSeg(seg, showInfo = false) {
-        processSeg(seg, showInfo);
-    }
-
     removeHighlights();
-    let selFea = W.selectionManager.getSelectedFeatures();
-    if (selFea && selFea.length > 0 && selFea.length <= 15) {
-        // Scan all segments with same street as selected
-        if (!rsaSettings.ShowSegShields && !rsaSettings.SegShieldMissing && !rsaSettings.SegShieldError && !rsaSettings.HighSegShields && !rsaSettings.titleCase)
-            return;
-
+    let selSegs = W.selectionManager.getSelectedFeatures().filter(f => f.model.type === "segment").map(f => f.model);
+    // Scan all segments on screen
+    if (rsaSettings.ShowSegShields || rsaSettings.SegShieldMissing || rsaSettings.SegShieldError || rsaSettings.HighSegShields || rsaSettings.titleCase) {
         _.each(W.model.segments.getObjectArray(), s => {
-            selFea.forEach(selected => {
-                if (selected.model.type === "segment" && selected.model.attributes.primaryStreetID === s.attributes.primaryStreetID) {
-                    scanSeg(s);
-                }
-            });
+            processSeg(s, selSegs);
         });
-    } else {
-        // Scan all segments on screen
-        if (rsaSettings.ShowSegShields || rsaSettings.SegShieldMissing || rsaSettings.SegShieldError || rsaSettings.HighSegShields || rsaSettings.titleCase) {
-            _.each(W.model.segments.getObjectArray(), s => {
-                scanSeg(s);
-            });
-        }
-        // Scan all nodes on screen
-        if (rsaSettings.HighNodeShields || rsaSettings.ShowNodeShields || rsaSettings.titleCase) {
-            _.each(W.model.nodes.getObjectArray(), n => {
-                scanNode(n);
-            });
-        }
+    }
+    // Scan all nodes on screen
+    if (rsaSettings.HighNodeShields || rsaSettings.ShowNodeShields || rsaSettings.titleCase) {
+        _.each(W.model.nodes.getObjectArray(), n => {
+            scanNode(n);
+        });
     }
 }
 
-function processSeg(seg) {
+function processSeg(seg, selSegs) {
     let segAtt = seg.attributes;
     let street = W.model.streets.getObjectById(segAtt.primaryStreetID);
     let cityID = W.model.cities.getObjectById(street.cityID);
@@ -1469,47 +1451,74 @@ function processSeg(seg) {
     let hasShield = street.signType !== null;
 
     // Exlude ramps
-    if (!rsaSettings.ShowRamps && segAtt.roadType === 4) return;
+    if (!rsaSettings.ShowRamps && segAtt.roadType === 4)
+        return;
 
     // Only show mH and above
-    if (rsaSettings.mHPlus && segAtt.roadType !== 3 && segAtt.roadType !== 4 && segAtt.roadType !== 6 && segAtt.roadType !== 7) return;
+    if (rsaSettings.mHPlus && segAtt.roadType !== 3 && segAtt.roadType !== 4 && segAtt.roadType !== 6 && segAtt.roadType !== 7)
+        return;
 
     // Display shield on map
-    if (hasShield && rsaSettings.ShowSegShields) displaySegShields(seg, street.signType, street.signText, street.direction);
+    if (hasShield && rsaSettings.ShowSegShields) {
+        displaySegShields(seg, street.signType, street.signText, street.direction);
+    }
+
+    // Compute opacity only when needed with a closure
+    let opacity = null;
+    let computeOpacity = () => {
+        if (opacity !== null) {
+            return opacity;
+        }
+        if (selSegs.length > 0) {
+            if (selSegs.find(sel => sel.attributes.primaryStreetID === seg.attributes.primaryStreetID)) {
+                opacity = 1;
+            } else {
+                opacity = 0.33;
+            }
+        } else {
+            opacity = 0.75;
+        }
+        return opacity;
+    };
 
     // If candidate and has shield
     if (segmentCandidate.isCandidate && hasShield && rsaSettings.HighSegShields) {
         if (isValidShield(segAtt)) {
-            createHighlight(seg, rsaSettings.HighSegClr);
+            createHighlight(seg, rsaSettings.HighSegClr, computeOpacity());
         } else {
-            createHighlight(seg, rsaSettings.ErrSegClr);
+            createHighlight(seg, rsaSettings.ErrSegClr, computeOpacity());
         }
     }
 
     // If candidate and missing shield
-    if (segmentCandidate.isCandidate && !hasShield && rsaSettings.SegShieldMissing) createHighlight(seg, rsaSettings.MissSegClr);
+    if (segmentCandidate.isCandidate && !hasShield && rsaSettings.SegShieldMissing) {
+        createHighlight(seg, rsaSettings.MissSegClr, computeOpacity());
+    }
 
     // If not candidate and has shield
     if (country.name === "France") {
         if ((!segmentCandidate.isCandidate || !primaryStreetCandidate.isCandidate) && hasShield && rsaSettings.SegShieldError) {
-            createHighlight(seg, rsaSettings.ErrSegClr);
+            createHighlight(seg, rsaSettings.ErrSegClr, computeOpacity());
         }
     } else {
         if (!candidate.isCandidate && hasShield && rsaSettings.SegShieldError) {
-            createHighlight(seg, rsaSettings.ErrSegClr);
+            createHighlight(seg, rsaSettings.ErrSegClr, computeOpacity());
         }
     }
 
     // Highlight seg shields with direction
-    if (hasShield && street.direction && rsaSettings.SegHasDir) createHighlight(seg, rsaSettings.SegHasDirClr);
-    if (hasShield && !street.direction && rsaSettings.SegInvDir) createHighlight(seg, rsaSettings.SegInvDirClr);
+    if (hasShield && street.direction && rsaSettings.SegHasDir) {
+        createHighlight(seg, rsaSettings.SegHasDirClr, computeOpacity());
+    }
+    if (hasShield && !street.direction && rsaSettings.SegInvDir) {
+        createHighlight(seg, rsaSettings.SegInvDirClr, computeOpacity());
+    }
 
     // Streets without capitalized letters
     if (rsaSettings.titleCase) {
         const badName = matchTitleCase(street);
         if (badName === true) {
-            createHighlight(seg, rsaSettings.TitleCaseClr, true);
-            // autoFixButton();
+            createOversizedHighlight(seg, rsaSettings.TitleCaseClr);
         }
     }
 }
@@ -1517,17 +1526,18 @@ function processSeg(seg) {
 function processNode(node, seg1, seg2) {
     let turn = W.model.getTurnGraph().getTurnThroughNode(node, seg1, seg2);
     let turnData = turn.getTurnData();
-    let hasGuidence = turnData.hasTurnGuidance();
+    let hasGuidance = turnData.hasTurnGuidance();
 
-    if (hasGuidence) {
-        if (rsaSettings.ShowNodeShields && W.map.getZoom() > 14) displayNodeIcons(node, turnData);
+    if (hasGuidance) {
+        if (rsaSettings.ShowNodeShields && W.map.getZoom() > 14) {
+            displayNodeIcons(node, turnData);
+        }
 
         if (rsaSettings.titleCase) {
             let badName = matchTitleCaseThroughNode(turn);
             if (badName.isBad === true) {
                 let color = badName.softIssue ? rsaSettings.TitleCaseSftClr : rsaSettings.TitleCaseClr;
-                createHighlight(node, color, true);
-                // autoFixButton();
+                createOversizedHighlight(node, color);
             }
         }
     }
@@ -1903,14 +1913,18 @@ function displaySegShields(segment, shieldID, shieldText, shieldDir) {
     });
 }
 
-function createHighlight(obj, color, overSized = false) {
+function createOversizedHighlight(obj, color) {
+    return createHighlight(obj, color, 1, true);
+}
+
+function createHighlight(obj, color, opacity, overSized = false) {
     const geo = obj.geometry.clone();
     let isNode = obj.type === "node";
 
     if (isNode) {
         const styleNode = {
             strokeColor: color,
-            strokeOpacity: overSized === true ? 1 : 0.75,
+            strokeOpacity: overSized === true ? 1 : opacity,
             strokeWidth: 4,
             fillColor: color,
             fillOpacity: 0.75,
@@ -1924,10 +1938,9 @@ function createHighlight(obj, color, overSized = false) {
         const pointFeature = new OpenLayers.Feature.Vector(pointNode, null, styleNode);
         rsaIconLayer.addFeatures(pointFeature);
     } else {
-        // console.log('seg highlight')
         const style = {
             strokeColor: color,
-            strokeOpacity: overSized === true ? 1 : 0.75,
+            strokeOpacity: overSized === true ? 1 : opacity,
             strokeWidth: overSized === true ? 7 : 4,
             fillColor: color,
             fillOpacity: 0.75
