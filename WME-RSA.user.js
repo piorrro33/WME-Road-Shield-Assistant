@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WME Road Shield Assistant
 // @namespace    https://greasyfork.org/en/users/286957-skidooguy
-// @version      2021.08.26.03
+// @version      2022.07.17.01
 // @description  Adds shield information display to WME 
 // @author       SkiDooGuy
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
@@ -1484,7 +1484,7 @@ function processSeg(seg, selSegs) {
     }
 
     // If candidate and has shield
-    if (rsaSettings.HighSegShields && segmentCandidate.isCandidate && primaryShield) {
+    if (rsaSettings.HighSegShields && segmentCandidate && primaryShield) {
         if (isValidShield(segAtt)) {
             createHighlight(seg, rsaSettings.HighSegClr, getOpacity());
         } else {
@@ -1492,15 +1492,15 @@ function processSeg(seg, selSegs) {
         }
     }
 
-    // If candidate and missing shield
+    // If candidate and missing (alt) shield
     if (rsaSettings.SegShieldMissing) {
         if (CheckAltName.includes(country.id)) {
-            if (segmentCandidate.isCandidate && !primaryShield && altShields.length === 0) {
+            if (segmentCandidate && !primaryShield && altShields.length === 0) {
                 createHighlight(seg, rsaSettings.MissSegClr, getOpacity());
-            } else if (!primaryStreetCandidate.isCandidate && primaryShield && !altShields.find(s => s === primaryShield)) {
+            } else if (!primaryStreetCandidate && primaryShield && !altShields.find(s => s === primaryShield)) {
                 createHighlight(seg, rsaSettings.MissSegClr, getOpacity());
             }
-        } else if (segmentCandidate.isCandidate && !primaryShield && altShields.length === 0) {
+        } else if (segmentCandidate && !primaryShield && altShields.length === 0) {
             createHighlight(seg, rsaSettings.MissSegClr, getOpacity());
         }
     }
@@ -1509,10 +1509,10 @@ function processSeg(seg, selSegs) {
     // If not candidate and has shield
     if (rsaSettings.SegShieldError) {
         if (CheckAltName.includes(country.id)) {
-            if ((!segmentCandidate.isCandidate || !primaryStreetCandidate.isCandidate) && primaryShield) {
+            if ((!segmentCandidate || !primaryStreetCandidate) && primaryShield) {
                 createHighlight(seg, rsaSettings.ErrSegClr, getOpacity());
             }
-        } else if (!segmentCandidate.isCandidate && primaryShield) {
+        } else if (!segmentCandidate && primaryShield) {
             createHighlight(seg, rsaSettings.ErrSegClr, getOpacity());
         }
     }
@@ -1558,31 +1558,28 @@ function processNode(node, seg1, seg2) {
 // Function written by kpouer to accommodate French conventions of shields being based on alt names
 function isSegmentCandidate(segAtt, state, country) {
     let street = W.model.streets.getObjectById(segAtt.primaryStreetID);
-    let candidate = isStreetCandidate(street, state, country);
-    if (candidate.isCandidate) {
-        return candidate;
+    let isCandidate = isStreetCandidate(street, state, country);
+    if (isCandidate) {
+        return true;
     }
 
     if (CheckAltName.includes(country)) {
         for (let i = 0; i < segAtt.streetIDs.length; i++) {
             street = W.model.streets.getObjectById(segAtt.streetIDs[i]);
-            candidate = isStreetCandidate(street, state, country);
-            if (candidate.isCandidate) {
-                return candidate;
+            isCandidate = isStreetCandidate(street, state, country);
+            if (isCandidate) {
+                return true;
             }
         }
     }
-    return candidate;
+    return false;
 }
 
 function isStreetCandidate(street, state, country) {
-    const info = {
-        isCandidate: false,
-        iconID: null
-    };
+    let isCandidate = false;
 
     if (!RoadAbbr[country]) {
-        return info;
+        return false;
     }
 
     //Check to see if the country has states configured in RSA by looking for a key with nothing in it
@@ -1598,22 +1595,20 @@ function isStreetCandidate(street, state, country) {
                 const isMatch = name.match(abbr);
 
                 if (isMatch && name === isMatch[0]) {
-                    info.isCandidate = true;
-                    info.iconID = abbrvs[abrKey];
+                    isCandidate = true;
                 }
             } else {
                 const abbr = Object.keys(abbrvs)[i];
                 const isMatch = name.includes(abbr);
 
                 if (isMatch) {
-                    // console.log(abbrvs[abbr]);
-                    info.isCandidate = true;
-                    info.iconID = abbrvs[abbr];
+                    isCandidate = true;
                 }
             }
         }
     }
-    return info;
+
+    return isCandidate;
 }
 
 function isValidShield(segAtt) {
